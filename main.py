@@ -10,8 +10,8 @@ def main():
     if api_key == None:
         raise RuntimeError("GEMINI_API_KEY environment variable not set")
     # Set up ability to use command line arguements 
-    parser = argparse.ArgumentParser(description="chat")
-    parser.add_argument("user_prompt", type=str, help="User prompt")
+    parser = argparse.ArgumentParser(description="AI chat assistant")
+    parser.add_argument("user_prompt", type=str, help="Prompt to send to the bot")
     args = parser.parse_args()
     # Set up Google LLM client
     client = genai.Client(api_key=api_key)
