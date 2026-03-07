@@ -17,10 +17,9 @@ def main():
         contents=user_prompt
     )
     # 
-    if response.usage_metadata is None:
-        raise RuntimeError("Response is missing usage_metadata")
+    if not response.usage_metadata:
+        raise RuntimeError("Gemini API response appears to be malformed")
     #
-    print(f"User prompt: {user_prompt}") 
     print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
     print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
     print("Response:")
