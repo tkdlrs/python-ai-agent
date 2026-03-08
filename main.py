@@ -20,6 +20,9 @@ def main():
     client = genai.Client(api_key=api_key)
     messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
     # 
+    if args.verbose:
+        print(f"User prompt: {args.user_prompt}\n")
+    # 
     generate_content(client, messages, args.verbose)
 # 
 
@@ -32,8 +35,7 @@ def generate_content(client, messages, verbose):
     if not response.usage_metadata:
         raise RuntimeError("Gemini API response appears to be malformed")
     # Output/Response
-    if verbose == True:
-        print(f"User prompt: {messages[0]}")
+    if verbose:
         print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
         print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
     print("Response:")
