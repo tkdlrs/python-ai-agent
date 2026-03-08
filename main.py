@@ -6,18 +6,23 @@ from google import genai
 from google.genai import types
 # 
 def main():
-    load_dotenv()
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if api_key == None:
-        raise RuntimeError("GEMINI_API_KEY environment variable not set")
     # Set up ability to use command line arguements 
     parser = argparse.ArgumentParser(description="AI chat assistant")
     parser.add_argument("user_prompt", type=str, help="Prompt to send to the bot")
     args = parser.parse_args()
     # 
-    messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
+    load_dotenv()
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY environment variable not set")
     # Set up Google LLM client
     client = genai.Client(api_key=api_key)
+    messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
+    # 
+    generate_content(client, messages)
+# 
+
+def generate_content(client, messages):
     response = client.models.generate_content(
         model='gemini-2.5-flash', 
         contents=messages
@@ -32,6 +37,6 @@ def main():
     print(response.text)
 
 
-
+# 
 if __name__ == "__main__":
     main()
