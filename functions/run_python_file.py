@@ -13,24 +13,33 @@ def run_python_file(working_directory, file_path, args=None):
         if not os.path.isfile(abs_file_path):
             return f'Error: "{file_path}" does not exist or is not a regular file'
         # 
-        if not abs_file_path.endswith((".py")):
+        if not abs_file_path.endswith(".py"):
             return f'Error: "{file_path}" is not a Python file'
         # 
         command = ["python", abs_file_path]
         # 
-        if args is not None:
+        if args:
             command.extend(args)
         # 
-        output_string = ""
-        complete_process = subprocess.run(command, cwd=abs_working_dir, timeout=30, text=True, capture_output=True)
-        if complete_process.returncode != 0:
-            output_string += f'Process exited with code {complete_process.returncode}'
-        if not complete_process.stdout and not complete_process.stderr:
-            output_string +=  f'No output produced'
-        output_string += f'STDOUT: {complete_process.stdout}'
-        output_string += f'STDERR: {complete_process.stderr}'
+        result = subprocess.run(
+            command,
+            cwd=abs_working_dir,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
         # 
-        return output_string
+        output = []
+        if result.returncode != 0:
+            output.append(f'Process exited with code {result.returncode}')
+        if not result.stdout and not result.stderr:
+            output.append('No output produced')
+        if result.stdout:
+            output.append(f'STDOUT:\n{result.stdout}')
+        if result.stderr:
+            output.append(f'STDERR:\n{result.stderr}')
+        # 
+        return "\n".join(output)
         # 
     except Exception as e:
         return f"Error: executing Python file: {e}"
