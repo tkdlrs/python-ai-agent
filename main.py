@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 from google import genai 
 from google.genai import types
 # 
+from prompts import system_prompt
+# 
 def main():
     # Set up ability to use command line arguements 
     parser = argparse.ArgumentParser(description="AI chat assistant")
@@ -29,7 +31,11 @@ def main():
 def generate_content(client, messages, verbose):
     response = client.models.generate_content(
         model='gemini-2.5-flash', 
-        contents=messages
+        contents=messages,
+        config=types.GenerateContentConfig(
+            system_instruction=system_prompt,
+            temperature=0
+        )
     )
     # 
     if not response.usage_metadata:
@@ -40,7 +46,6 @@ def generate_content(client, messages, verbose):
         print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
     print("Response:")
     print(response.text)
-
 
 # 
 if __name__ == "__main__":
