@@ -1,5 +1,6 @@
 import os 
 import argparse
+import sys
 # 
 from dotenv import load_dotenv
 from google import genai 
@@ -7,6 +8,7 @@ from google.genai import types
 # 
 from call_function import available_functions, call_function
 from prompts import system_prompt
+from config import MAX_ITERS
 # 
 def main():
     # Set up ability to use command line arguements 
@@ -25,8 +27,21 @@ def main():
     # 
     if args.verbose:
         print(f"User prompt: {args.user_prompt}\n")
+    #
+    for _ in range(MAX_ITERS):
+        # call the model, handle responses, etc.
+        try:
+            final_response = generate_content(client, messages, args.verbose)
+            if final_response:
+                print("Final response:")
+                print(final_response)
+                return
+        except Exception as e:
+            print(f"Error in generate_content: {e}")
     # 
-    generate_content(client, messages, args.verbose)
+    print(f"Maximum iterations ({MAX_ITERS}) reached")
+    sys.exit(1)
+
 # 
 
 def generate_content(client, messages, verbose):
@@ -37,7 +52,7 @@ def generate_content(client, messages, verbose):
             tools=[available_functions],
             system_instruction=system_prompt,
             temperature=0
-        )
+        ),
     )
     # 
     if not response.usage_metadata:
@@ -48,10 +63,13 @@ def generate_content(client, messages, verbose):
         print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
         print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
     # 
+    if response.candidates:
+        for candidate in response.candidates:
+            if candidate.content:
+                messages.append(candidate.content)
+    # 
     if not response.function_calls:
-        print("Response:")
-        print(response.text)
-        return 
+        return response.text        
     # 
     function_responses = []
     for function_call in response.function_calls:
@@ -68,9 +86,7 @@ def generate_content(client, messages, verbose):
         # 
         function_responses.append(result.parts[0])
         # 
-    #
-# 
-            
+    messages.append(types.Content(role="user", parts=function_responses))
 
 # 
 if __name__ == "__main__":
